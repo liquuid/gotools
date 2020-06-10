@@ -47,10 +47,18 @@ func main() {
 	for i := range list {
 		dir := filepath.Dir(list[i])
 		file := filepath.Base(list[i])
+		fmt.Println("(", i+1, "/", len(list), ")", dir, "/", file)
 		inputName := path.Join(dir, file)
+		if strings.Contains(inputName, ".x265_") {
+			continue
+		}
 		outputName := makeOutputName(inputName, *minusQ, Ext)
 
-		fmt.Println("(", i+1, "/", len(list), ")", filepath.Dir(list[i]), "/", filepath.Base(list[i]))
+		if _, err := os.Stat(outputName); !os.IsNotExist(err) {
+			fmt.Println(outputName, " exists")
+			continue
+		}
+	convert:
 		cmd := exec.Command("ffmpeg", "-n", "-i", inputName, "-map", "0", "-c:a", "copy", "-c:s", "copy", "-c:v", "libx265", "-crf", strconv.Itoa(*minusQ), outputName)
 
 		if *minusP {
@@ -60,7 +68,9 @@ func main() {
 		stdout, err := cmd.Output()
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(3)
+			os.Remove(outputName)
+			//os.Exit(3)
+			goto convert
 		}
 		fmt.Println(string(stdout))
 
