@@ -59,10 +59,11 @@ func main() {
 			continue
 		}
 	convert:
-		cmd := exec.Command("ffmpeg", "-n", "-i", inputName, "-map", "0", "-c:a", "copy", "-c:s", "copy", "-c:v", "libx265", "-crf", strconv.Itoa(*minusQ), outputName)
+		cmd := exec.Command("ffmpeg", "-vaapi_device", "/dev/dri/renderD128", "-i", inputName, "-vf", "format=nv12,hwupload", "-map", "0", "-c:a", "copy", "-c:s", "copy", "-c:v", "hevc_vaapi", "-qp", strconv.Itoa(*minusQ), outputName)
+		//ffmpeg -vaapi_device /dev/dri/renderD128  -vf 'format=nv12,hwupload' -c:v hevc_vaapi -qp 30 -c:a copy samu.mkv
 
 		if *minusP {
-			cmd = exec.Command("echo", "ffmpeg", "-n", "-i", inputName, "-map", "0", "-c:a", "copy", "-c:s", "copy", "-c:v", "libx265", "-crf", strconv.Itoa(*minusQ), outputName)
+			cmd = exec.Command("echo", "ffmpeg", "-vaapi_device", "/dev/dri/renderD128", "-i", inputName, "-vf", "format=nv12,hwupload", "-map", "0", "-c:a", "copy", "-c:s", "copy", "-c:v", "hevc_vaapi", "-qp", strconv.Itoa(*minusQ), outputName)
 		}
 
 		stdout, err := cmd.Output()
